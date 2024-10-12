@@ -26,8 +26,8 @@ Make sure the following are installed:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/modsecurity-nginx-flask.git
-   cd modsecurity-nginx-flask
+   git clone https://github.com/ferhatcamgoz/rest-api-for-modsec-crs.git
+   cd rest-api-for-modsec-crs
    ```
 
 2. Build the Docker image:
@@ -54,9 +54,40 @@ Make sure the following are installed:
 
 1. Send a `POST` request to the API running at `http://localhost:8010`:
    ```bash
-   curl -X POST http://localhost:8010 -H "Content-Type: application/json" -d '{"url":"/test", "method":"POST", "requestHeaders":{}, "requestBody":{}, "responseHeaders":{}, "responseBody":{}}'
-   ```
-
+   curl -X POST http://localhost:8010 -H "Content-Type: application/json" -d '{
+      "url":"/test", 
+      "method":"POST",
+      "requestHeaders": {
+         "Content-Type": "application/json",
+         "Authorization": "Bearer xyz"
+      }, 
+      "requestBody": {
+         "username": "<script>alert(XSS)</script>",
+         "password": "secure_password OR 1=1",
+         "email": "test_user@example.com UNION SELECT * FROM users --",
+         "phone": "+1234567890",
+         "preferences": {
+               "newsletter": "true; DROP TABLE users;",
+               "notifications": false
+         }
+      },
+      
+      "responseBody": {
+         "username": "<script>alert(XSS)</script>",
+         "password": "secure_password OR 1=1",
+         "email": "test_user@example.com UNION SELECT * FROM users --",
+         "phone": "Access Database Engine",
+         "preferences": {
+               "newsletter": "true; DROP TABLE users;",
+               "notifications": false
+         }
+      },
+      "responseHeaders": {
+         "Content-Type": "application/json"
+      }
+    }'
+    ```
+    
 2. The API will forward the request to the internal server on port `8080`.
 
 3. If ModSecurity detects any issues with the request or response, the logs will be extracted from `/var/log/modsecurity/audit.log` and returned in the response.
